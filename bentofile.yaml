@@ -1,0 +1,13 @@
+service: "service.service:FraudDetector"
+labels:
+  project: credit-card-fraud-detection
+  owner: akinpelumi-ajayi
+include:
+  - "service/*.py"
+  - "src/fraud/*.py"
+  - "models/model.joblib"
+python:
+  requirements_txt: "requirements-serve.txt"
+envs:
+  - name: PYTHONPATH
+    value: "/home/bentoml/bento/src/src"

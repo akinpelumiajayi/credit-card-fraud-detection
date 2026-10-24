@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fraud"
+version = "1.0.0"
+description = "Credit card fraud detection with DVC, MLflow, Feast, Evidently, BentoML and Argo Workflows"
+requires-python = ">=3.10"
+authors = [{ name = "Akinpelumi Michael Ajayi" }]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src", "."]

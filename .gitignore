@@ -1,0 +1,16 @@
+# Data and models are tracked by DVC, not Git
+/data/raw
+/data/features
+/models
+/feature_repo/data/
+mlruns/
+mlflow.db
+mlartifacts/
+.dvc/cache
+.dvc/tmp
+
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+.DS_Store

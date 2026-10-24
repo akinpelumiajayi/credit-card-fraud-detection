@@ -1,0 +1,68 @@
+# Argo Workflow: runs the training pipeline on Kubernetes as a DAG.
+# Submit with:  argo submit k8s/argo-workflow.yaml -n argo --watch
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: fraud-pipeline-
+spec:
+  entrypoint: fraud-pipeline
+  arguments:
+    parameters:
+      - name: image
+        value: ghcr.io/akinpelumiajayi/fraud-pipeline:latest
+      - name: data-source
+        value: openml
+  volumeClaimTemplates:
+    - metadata:
+        name: workspace
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 2Gi
+  templates:
+    - name: fraud-pipeline
+      dag:
+        tasks:
+          - name: prepare
+            template: step
+            arguments:
+              parameters: [{ name: cmd, value: "python -m fraud.data --source {{workflow.parameters.data-source}}" }]
+          - name: features
+            template: step
+            dependencies: [prepare]
+            arguments:
+              parameters: [{ name: cmd, value: "python -m fraud.features" }]
+          - name: train
+            template: step
+            dependencies: [features]
+            arguments:
+              parameters: [{ name: cmd, value: "python -m fraud.train" }]
+          - name: drift
+            template: step
+            dependencies: [features]
+            arguments:
+              parameters: [{ name: cmd, value: "python -m fraud.drift" }]
+          - name: evaluate
+            template: step
+            dependencies: [train]
+            arguments:
+              parameters: [{ name: cmd, value: "python -m fraud.evaluate" }]
+
+    - name: step
+      inputs:
+        parameters:
+          - name: cmd
+      container:
+        image: "{{workflow.parameters.image}}"
+        command: [sh, -c]
+        args: ["cp -rn /app/. /workspace/ 2>/dev/null; cd /workspace && {{inputs.parameters.cmd}}"]
+        env:
+          - name: PYTHONPATH
+            value: /workspace/src
+        volumeMounts:
+          - name: workspace
+            mountPath: /workspace
+        resources:
+          requests: { cpu: "500m", memory: 1Gi }
+          limits: { cpu: "2", memory: 4Gi }

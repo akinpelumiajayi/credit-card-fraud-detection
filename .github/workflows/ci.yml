@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test-and-pipeline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Unit and end-to-end tests
+        run: pytest -q
+      - name: Run DVC pipeline on synthetic data
+        env:
+          PYTHONPATH: src
+        run: |
+          sed -i 's/source: openml/source: synthetic/' params.yaml
+          dvc repro
+          dvc metrics show
+      - name: Feast apply and historical feature retrieval
+        env:
+          PYTHONPATH: src
+        run: |
+          cd feature_repo && feast apply && cd ..
+          python -m fraud.train --use-feast
+      - name: Upload reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: reports
+          path: |
+            metrics/
+            reports/

@@ -1,0 +1,27 @@
+data:
+  # "openml" downloads the real ULB credit card dataset (284,807 transactions, OpenML id 1597).
+  # "synthetic" generates a small dataset with the same schema, used in CI and tests.
+  source: openml
+  synthetic_rows: 20000
+  synthetic_fraud_rate: 0.01
+  seed: 42
+
+split:
+  # Time-based split: train on the earliest transactions, test on the latest.
+  test_fraction: 0.2
+
+models:
+  isolation_forest:
+    n_estimators: 200
+    max_samples: 256
+  gradient_boosting:
+    max_iter: 300
+    learning_rate: 0.05
+    max_leaf_nodes: 31
+
+threshold:
+  # Pick the decision threshold giving the highest recall at or above this precision.
+  min_precision: 0.80
+
+mlflow:
+  experiment: credit-card-fraud

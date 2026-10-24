@@ -1,0 +1,62 @@
+stages:
+  prepare:
+    cmd: python -m fraud.data
+    deps:
+      - src/fraud/data.py
+    params:
+      - data
+    outs:
+      - data/raw/transactions.parquet
+
+  features:
+    cmd: python -m fraud.features
+    deps:
+      - src/fraud/features.py
+      - data/raw/transactions.parquet
+    params:
+      - split
+    outs:
+      - data/features/train.parquet
+      - data/features/test.parquet
+      - feature_repo/data/transaction_features.parquet
+
+  train:
+    cmd: python -m fraud.train
+    deps:
+      - src/fraud/train.py
+      - src/fraud/metrics.py
+      - data/features/train.parquet
+    params:
+      - models
+      - threshold
+    outs:
+      - models/model.joblib
+    metrics:
+      - metrics/train.json:
+          cache: false
+
+  evaluate:
+    cmd: python -m fraud.evaluate
+    deps:
+      - src/fraud/evaluate.py
+      - models/model.joblib
+      - data/features/test.parquet
+    metrics:
+      - metrics/eval.json:
+          cache: false
+    plots:
+      - reports/pr_curve.png:
+          cache: false
+
+  drift:
+    cmd: python -m fraud.drift
+    deps:
+      - src/fraud/drift.py
+      - data/features/train.parquet
+      - data/features/test.parquet
+    metrics:
+      - metrics/drift.json:
+          cache: false
+    outs:
+      - reports/drift.html:
+          cache: false

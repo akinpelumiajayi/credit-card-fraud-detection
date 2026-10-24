@@ -1,0 +1,52 @@
+# Deploys the BentoML container built with `bentoml containerize fraud_detector:latest`.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fraud-detector
+  labels: { app: fraud-detector }
+spec:
+  replicas: 2
+  selector:
+    matchLabels: { app: fraud-detector }
+  template:
+    metadata:
+      labels: { app: fraud-detector }
+    spec:
+      containers:
+        - name: fraud-detector
+          image: ghcr.io/akinpelumiajayi/fraud-detector:latest
+          ports:
+            - containerPort: 3000
+          readinessProbe:
+            httpGet: { path: /readyz, port: 3000 }
+            initialDelaySeconds: 5
+          livenessProbe:
+            httpGet: { path: /livez, port: 3000 }
+            initialDelaySeconds: 15
+          resources:
+            requests: { cpu: "250m", memory: 512Mi }
+            limits: { cpu: "1", memory: 1Gi }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fraud-detector
+spec:
+  selector: { app: fraud-detector }
+  ports:
+    - port: 80
+      targetPort: 3000
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: fraud-detector
+spec:
+  scaleTargetRef: { apiVersion: apps/v1, kind: Deployment, name: fraud-detector }
+  minReplicas: 2
+  maxReplicas: 6
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target: { type: Utilization, averageUtilization: 70 }
