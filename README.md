@@ -54,7 +54,7 @@ prepare ──> features ──┬──> train ──> evaluate
 
 ## Results
 
-Run `dvc repro` on the real data, then `dvc metrics show`. Paste your numbers here:
+Run `dvc repro` on the real data, then `dvc metrics show`.
 
 | Metric (test period) | Value |
 |---|---|
