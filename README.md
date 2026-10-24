@@ -2,7 +2,7 @@
 
 Detects fraudulent card transactions with two models, an unsupervised **Isolation Forest** and a supervised **gradient boosting** classifier, and runs the full model lifecycle: versioned data, tracked experiments, a feature store, an HTTP scoring API, drift monitoring and orchestration on Kubernetes.
 
-![CI](https://github.com/akinpelumiajayi/credit-card-fraud-detection-mlops/actions/workflows/ci.yml/badge.svg)
+![CI](https://github.com/akinpelumiajayi/credit-card-fraud-detection/actions/workflows/ci.yml/badge.svg)
 
 | Stage | Tool |
 |---|---|
@@ -67,8 +67,8 @@ Run `dvc repro` on the real data, then `dvc metrics show`.
 ## Quick start
 
 ```bash
-git clone https://github.com/akinpelumiajayi/credit-card-fraud-detection-mlops.git
-cd credit-card-fraud-detection-mlops
+git clone https://github.com/akinpelumiajayi/credit-card-fraud-detection.git
+cd credit-card-fraud-detection
 python -m venv .venv && source .venv/bin/activate      # Python 3.10 to 3.12
 pip install -r requirements.txt
 export PYTHONPATH=src
